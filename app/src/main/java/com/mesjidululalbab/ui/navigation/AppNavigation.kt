@@ -16,8 +16,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import com.mesjidululalbab.data.model.BeritaAcara
 import com.mesjidululalbab.data.model.InfakJumat
 import com.mesjidululalbab.data.model.Jadwal
+import com.mesjidululalbab.data.repository.BeritaAcaraRepository
 import com.mesjidululalbab.data.repository.InfakRepository
 import com.mesjidululalbab.data.repository.JadwalRepository
 import com.mesjidululalbab.ui.components.MasjidTopBar
@@ -42,6 +44,13 @@ fun AppNavigation(
     val daftarInfak = remember {
         mutableStateListOf<InfakJumat>().apply {
             addAll(infakRepository.muatInfak())
+        }
+    }
+
+    val beritaRepository = remember(context) { BeritaAcaraRepository(context) }
+    val daftarBerita = remember {
+        mutableStateListOf<BeritaAcara>().apply {
+            addAll(beritaRepository.muatBeritaAcara())
         }
     }
 
@@ -121,7 +130,14 @@ fun AppNavigation(
             entryProvider = { key ->
                 when (key) {
                     is ScreenRoute.Beranda -> NavEntry(key) {
+                        val totalJadwal = daftarJadwal.size
+                        val saldoInfak = daftarInfak.sumOf { it.jumlahPemasukan } - daftarInfak.sumOf { it.jumlahPengeluaran }
+                        val totalBerita = daftarBerita.size
+
                         BerandaScreen(
+                            totalJadwal = totalJadwal,
+                            saldoInfak = saldoInfak,
+                            totalBerita = totalBerita,
                             onNavigasiKe = { id ->
                                 val ruteTarget = when (id) {
                                     "Jadwal" -> ScreenRoute.Jadwal
@@ -179,7 +195,25 @@ fun AppNavigation(
                     }
 
                     is ScreenRoute.Berita -> NavEntry(key) {
-                        BeritaScreen()
+                        BeritaScreen(
+                            daftarBerita = daftarBerita,
+                            onTambahBerita = { baru ->
+                                daftarBerita.add(baru)
+                                beritaRepository.simpanBeritaAcara(daftarBerita.toList())
+                            },
+                            onEditBerita = { index, baru ->
+                                if (index in daftarBerita.indices) {
+                                    daftarBerita[index] = baru
+                                    beritaRepository.simpanBeritaAcara(daftarBerita.toList())
+                                }
+                            },
+                            onHapusBerita = { index ->
+                                if (index in daftarBerita.indices) {
+                                    daftarBerita.removeAt(index)
+                                    beritaRepository.simpanBeritaAcara(daftarBerita.toList())
+                                }
+                            }
+                        )
                     }
 
                     else -> error("Rute tidak dikenal: $key")
