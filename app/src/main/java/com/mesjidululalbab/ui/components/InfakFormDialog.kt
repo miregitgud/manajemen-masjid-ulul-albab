@@ -34,24 +34,38 @@ fun InfakFormDialog(
     onDismiss: () -> Unit,
     onSimpan: (InfakJumat) -> Unit
 ) {
-    var kategori by remember { mutableStateOf(infakAwal?.kategori ?: "Kotak Infak Jumat") }
+    var jenisTransaksi by remember {
+        mutableStateOf(if ((infakAwal?.jumlahPengeluaran ?: 0L) > (infakAwal?.jumlahPemasukan ?: 0L)) "Pengeluaran" else "Pemasukan")
+    }
+
+    var kategori by remember {
+        mutableStateOf(infakAwal?.kategori ?: if (jenisTransaksi == "Pemasukan") "Kotak Infak Jumat" else "Operasional Masjid")
+    }
     var tanggal by remember { mutableStateOf(infakAwal?.tanggal ?: "") }
-    var pemasukanText by remember { mutableStateOf(infakAwal?.jumlahPemasukan?.toString() ?: "") }
-    var pengeluaranText by remember { mutableStateOf(infakAwal?.jumlahPengeluaran?.toString() ?: "0") }
+    var jumlahText by remember {
+        mutableStateOf(
+            if (jenisTransaksi == "Pemasukan")
+                (if ((infakAwal?.jumlahPemasukan ?: 0L) > 0L) infakAwal?.jumlahPemasukan?.toString() else "") ?: ""
+            else
+                (if ((infakAwal?.jumlahPengeluaran ?: 0L) > 0L) infakAwal?.jumlahPengeluaran?.toString() else "") ?: ""
+        )
+    }
     var petugas by remember { mutableStateOf(infakAwal?.petugasPenghitung ?: "") }
     var keterangan by remember { mutableStateOf(infakAwal?.keterangan ?: "") }
 
     var showDatePicker by remember { mutableStateOf(false) }
 
-    val pemasukan = pemasukanText.toLongOrNull() ?: 0L
-    val pengeluaran = pengeluaranText.toLongOrNull() ?: 0L
-    val isValid = tanggal.isNotBlank() && pemasukan > 0L
+    val nominal = jumlahText.toLongOrNull() ?: 0L
+    val isValid = tanggal.isNotBlank() && nominal > 0L
+
+    val opsiPemasukan = listOf("Kotak Infak Jumat", "Transfer Bank", "QRIS", "Donatur Tetap")
+    val opsiPengeluaran = listOf("Operasional Masjid", "Honor Khotib / Ustadz", "Kebersihan & Sanitasi", "Listrik & Air", "Pemeliharaan Bangunan")
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = if (infakAwal != null) "Edit Catatan Infak" else "Tambah Catatan Infak",
+                text = if (infakAwal != null) "Edit Catatan Kas" else "Tambah Catatan Kas Infak",
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
             )
@@ -61,13 +75,59 @@ fun InfakFormDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 480.dp)
+                    .heightIn(max = 500.dp)
                     .verticalScroll(rememberScrollState())
             ) {
+                // Jenis Transaksi Selector
+                Column {
+                    Text(
+                        text = "Jenis Transaksi *",
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        FilterChip(
+                            selected = jenisTransaksi == "Pemasukan",
+                            onClick = {
+                                jenisTransaksi = "Pemasukan"
+                                kategori = "Kotak Infak Jumat"
+                            },
+                            label = { Text("🟢 Pemasukan") },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = Emas,
+                                selectedLabelColor = Hijau,
+                                containerColor = HijauKartu,
+                                labelColor = Krem
+                            ),
+                            modifier = Modifier.weight(1f)
+                        )
+                        FilterChip(
+                            selected = jenisTransaksi == "Pengeluaran",
+                            onClick = {
+                                jenisTransaksi = "Pengeluaran"
+                                kategori = "Operasional Masjid"
+                            },
+                            label = { Text("🔴 Pengeluaran") },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.error,
+                                selectedLabelColor = MaterialTheme.colorScheme.onError,
+                                containerColor = HijauKartu,
+                                labelColor = Krem
+                            ),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+
                 // Kategori Selector
                 Column {
                     Text(
-                        text = "Kategori Sumber Infak",
+                        text = "Kategori $jenisTransaksi",
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -76,7 +136,7 @@ fun InfakFormDialog(
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(listOf("Kotak Infak Jumat", "Transfer Bank", "QRIS", "Donatur Tetap")) { pilihan ->
+                        items(if (jenisTransaksi == "Pemasukan") opsiPemasukan else opsiPengeluaran) { pilihan ->
                             FilterChip(
                                 selected = kategori == pilihan,
                                 onClick = { kategori = pilihan },
@@ -124,34 +184,23 @@ fun InfakFormDialog(
                     )
                 }
 
-                // Jumlah Pemasukan
+                // Jumlah Nominal
                 OutlinedTextField(
-                    value = pemasukanText,
-                    onValueChange = { pemasukanText = it.filter { c -> c.isDigit() } },
-                    label = { Text("Jumlah Pemasukan (Rp) *") },
-                    placeholder = { Text("Contoh: 5000000") },
+                    value = jumlahText,
+                    onValueChange = { jumlahText = it.filter { c -> c.isDigit() } },
+                    label = { Text("Jumlah $jenisTransaksi (Rp) *") },
+                    placeholder = { Text("Contoh: 500000") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    isError = pemasukan <= 0L
-                )
-
-                // Jumlah Pengeluaran
-                OutlinedTextField(
-                    value = pengeluaranText,
-                    onValueChange = { pengeluaranText = it.filter { c -> c.isDigit() } },
-                    label = { Text("Pengeluaran Terkait (Rp)") },
-                    placeholder = { Text("Contoh: 0") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    isError = nominal <= 0L
                 )
 
                 // Petugas / Saksi
                 OutlinedTextField(
                     value = petugas,
                     onValueChange = { petugas = it },
-                    label = { Text("Petugas Penghitung / Saksi") },
+                    label = { Text("Petugas / Saksi Penanggung Jawab") },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Person,
@@ -166,7 +215,7 @@ fun InfakFormDialog(
                 OutlinedTextField(
                     value = keterangan,
                     onValueChange = { keterangan = it },
-                    label = { Text("Keterangan") },
+                    label = { Text("Catatan / Keterangan") },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Info,
@@ -187,8 +236,8 @@ fun InfakFormDialog(
                                 id = infakAwal?.id ?: UUID.randomUUID().toString(),
                                 tanggal = tanggal.trim(),
                                 kategori = kategori,
-                                jumlahPemasukan = pemasukan,
-                                jumlahPengeluaran = pengeluaran,
+                                jumlahPemasukan = if (jenisTransaksi == "Pemasukan") nominal else 0L,
+                                jumlahPengeluaran = if (jenisTransaksi == "Pengeluaran") nominal else 0L,
                                 petugasPenghitung = petugas.trim(),
                                 keterangan = keterangan.trim()
                             )
@@ -201,7 +250,7 @@ fun InfakFormDialog(
                     contentColor = Hijau
                 )
             ) {
-                Text("Simpan")
+                Text("Simpan Transaksi")
             }
         },
         dismissButton = {

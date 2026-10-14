@@ -49,18 +49,19 @@ fun KartuInfak(
 
             Spacer(Modifier.height(6.dp))
 
-            Text(
-                text = "Pemasukan: ${formatRupiah(infak.jumlahPemasukan)}",
-                color = Krem,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 14.sp
-            )
-
             if (infak.jumlahPengeluaran > 0) {
                 Text(
                     text = "Pengeluaran: ${formatRupiah(infak.jumlahPengeluaran)}",
                     color = MerahHapus,
-                    fontSize = 12.sp
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp
+                )
+            } else {
+                Text(
+                    text = "Pemasukan: ${formatRupiah(infak.jumlahPemasukan)}",
+                    color = Krem,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp
                 )
             }
 

@@ -13,16 +13,16 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mesjidululalbab.data.model.Jadwal
+import com.mesjidululalbab.ui.components.JadwalDetailDialog
 import com.mesjidululalbab.ui.components.KartuJadwalShalat
 import com.mesjidululalbab.ui.components.MenuTombol
 import com.mesjidululalbab.ui.theme.*
@@ -37,19 +37,13 @@ fun BerandaScreen(
     onNavigasiKe: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showJadwalDetailDialog by remember { mutableStateOf(false) }
+
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
             HijauAksen,
             Hijau,
             HijauGelap
-        )
-    )
-
-    val emasGradient = Brush.horizontalGradient(
-        colors = listOf(
-            Emas,
-            EmasTerang,
-            Emas
         )
     )
 
@@ -65,43 +59,6 @@ fun BerandaScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Sleek Islamic Greeting Banner (INFORMATIONAL HEADER)
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = HijauKartu.copy(alpha = 0.9f)
-                ),
-                shape = RoundedCornerShape(18.dp),
-                border = BorderStroke(1.dp, emasGradient),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "السلام عليكم ورحمة الله وبركاته",
-                            color = EmasTerang,
-                            fontSize = 17.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(Modifier.height(2.dp))
-                        Text(
-                            text = "Assalamu'alaikum Warahmatullahi Wabarakatuh",
-                            color = Krem.copy(alpha = 0.9f),
-                            fontSize = 11.sp,
-                            fontStyle = FontStyle.Italic
-                        )
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    Text("☪", fontSize = 28.sp)
-                }
-            }
-
             // Prayer Times Compact Widget (CLICKABLE FOR DETAIL & LOCATION)
             KartuJadwalShalat()
 
@@ -133,7 +90,7 @@ fun BerandaScreen(
                 )
             }
 
-            // Featured "Agenda Terdekat" Section (HIGH CONTRAST HIGHLIGHT PREVIEW)
+            // Featured "Agenda Terdekat" Section (OPENS DETAIL DIALOG)
             Column(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
@@ -166,7 +123,13 @@ fun BerandaScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onNavigasiKe("Jadwal") }
+                        .clickable {
+                            if (jadwalTerdekat != null) {
+                                showJadwalDetailDialog = true
+                            } else {
+                                onNavigasiKe("Jadwal")
+                            }
+                        }
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp)
@@ -242,7 +205,7 @@ fun BerandaScreen(
                                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                                     ) {
                                         Text(
-                                            text = "Buka Detail Agenda",
+                                            text = "Lihat Rincian Agenda",
                                             color = HijauGelap,
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold
@@ -325,6 +288,14 @@ fun BerandaScreen(
                 )
             }
         }
+    }
+
+    if (showJadwalDetailDialog && jadwalTerdekat != null) {
+        JadwalDetailDialog(
+            jadwal = jadwalTerdekat,
+            onDismiss = { showJadwalDetailDialog = false },
+            onKelolaJadwalClick = { onNavigasiKe("Jadwal") }
+        )
     }
 }
 
