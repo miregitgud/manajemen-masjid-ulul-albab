@@ -1,5 +1,6 @@
 package com.mesjidululalbab.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -16,11 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mesjidululalbab.ui.theme.Emas
-import com.mesjidululalbab.ui.theme.Hijau
-import com.mesjidululalbab.ui.theme.HijauKartu
-import com.mesjidululalbab.ui.theme.HijauMuda
-import com.mesjidululalbab.ui.theme.Krem
+import com.mesjidululalbab.ui.theme.*
 
 @Composable
 fun MenuTombol(
@@ -34,32 +31,33 @@ fun MenuTombol(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp)
+            .padding(vertical = 4.dp)
             .clickable { aksi() },
         colors = CardDefaults.cardColors(
             containerColor = HijauKartu
         ),
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = BorderStroke(1.dp, Emas.copy(alpha = 0.5f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Icon Container
             Box(
                 modifier = Modifier
-                    .size(52.dp)
+                    .size(48.dp)
                     .clip(CircleShape)
                     .background(HijauMuda),
                 contentAlignment = Alignment.Center
             ) {
-                Text(ikon, fontSize = 26.sp)
+                Text(ikon, fontSize = 24.sp)
             }
 
-            Spacer(Modifier.width(16.dp))
+            Spacer(Modifier.width(14.dp))
 
             Column(
                 modifier = Modifier.weight(1f)
@@ -69,19 +67,19 @@ fun MenuTombol(
                 ) {
                     Text(
                         text = judul,
-                        color = Emas,
+                        color = EmasTerang,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        fontSize = 15.sp
                     )
                     if (!badgeText.isNullOrBlank()) {
                         Spacer(Modifier.width(8.dp))
                         Surface(
-                            color = Emas,
+                            color = EmasTerang,
                             shape = CircleShape
                         ) {
                             Text(
                                 text = badgeText,
-                                color = Hijau,
+                                color = HijauGelap,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
@@ -93,17 +91,28 @@ fun MenuTombol(
                 Text(
                     text = keterangan,
                     color = Krem,
-                    fontSize = 12.sp,
-                    lineHeight = 16.sp
+                    fontSize = 11.sp,
+                    lineHeight = 15.sp
                 )
             }
 
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                tint = Emas,
-                modifier = Modifier.size(24.dp)
-            )
+            Spacer(Modifier.width(8.dp))
+
+            // Action Arrow Button Pill
+            Surface(
+                color = Emas,
+                shape = CircleShape,
+                modifier = Modifier.size(30.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = "Buka $judul",
+                        tint = HijauGelap,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
         }
     }
 }

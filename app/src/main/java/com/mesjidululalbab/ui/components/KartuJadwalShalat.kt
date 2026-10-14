@@ -1,5 +1,6 @@
 package com.mesjidululalbab.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -42,6 +43,10 @@ fun KartuJadwalShalat(
             latitude = lokasiAktif.latitude,
             longitude = lokasiAktif.longitude
         )
+    }
+
+    val nextPrayer = remember(jadwalShalat) {
+        jadwalShalat.find { it.isNext } ?: jadwalShalat.firstOrNull()
     }
 
     Card(
@@ -101,47 +106,95 @@ fun KartuJadwalShalat(
 
             Spacer(Modifier.height(10.dp))
 
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                items(jadwalShalat) { item ->
+                // Dedicated Very Left Slot for Active Upcoming Prayer Time
+                if (nextPrayer != null) {
                     Card(
                         colors = CardDefaults.cardColors(
-                            containerColor = if (item.isNext) Emas else HijauMuda
+                            containerColor = Emas
                         ),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
-                            .width(82.dp)
-                            .then(
-                                if (item.isNext) Modifier.border(1.dp, EmasTerang, RoundedCornerShape(12.dp)) else Modifier
-                            )
+                            .width(96.dp)
+                            .border(1.2.dp, EmasTerang, RoundedCornerShape(12.dp))
                             .clickable { showDetailDialog = true }
                     ) {
                         Column(
-                            modifier = Modifier.padding(vertical = 10.dp, horizontal = 6.dp),
+                            modifier = Modifier.padding(vertical = 6.dp, horizontal = 6.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = item.nama,
-                                color = if (item.isNext) Hijau else Krem,
-                                fontSize = 11.sp,
-                                fontWeight = if (item.isNext) FontWeight.Bold else FontWeight.Medium
+                                text = "BERIKUTNYA",
+                                color = HijauGelap,
+                                fontSize = 8.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.5.sp
                             )
-                            Spacer(Modifier.height(4.dp))
+                            Spacer(Modifier.height(2.dp))
                             Text(
-                                text = item.waktu,
-                                color = if (item.isNext) Hijau else EmasTerang,
-                                fontSize = 14.sp,
+                                text = nextPrayer.nama,
+                                color = HijauGelap,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
-                            if (item.isNext) {
-                                Spacer(Modifier.height(2.dp))
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                text = nextPrayer.waktu,
+                                color = HijauGelap,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                        }
+                    }
+                }
+
+                Spacer(Modifier.width(10.dp))
+
+                // Vertical Divider Line
+                Box(
+                    modifier = Modifier
+                        .height(56.dp)
+                        .width(1.5.dp)
+                        .background(Emas.copy(alpha = 0.4f))
+                )
+
+                Spacer(Modifier.width(10.dp))
+
+                // Scrollable Prayer Times List
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    items(jadwalShalat) { item ->
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (item.isNext) HijauKartuHighlight else HijauMuda
+                            ),
+                            shape = RoundedCornerShape(12.dp),
+                            border = if (item.isNext) androidx.compose.foundation.BorderStroke(1.dp, Emas) else null,
+                            modifier = Modifier
+                                .width(78.dp)
+                                .clickable { showDetailDialog = true }
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(vertical = 10.dp, horizontal = 6.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
                                 Text(
-                                    text = "Berikutnya",
-                                    color = Hijau,
-                                    fontSize = 9.sp,
-                                    fontWeight = FontWeight.SemiBold
+                                    text = item.nama,
+                                    color = if (item.isNext) EmasTerang else Krem,
+                                    fontSize = 11.sp,
+                                    fontWeight = if (item.isNext) FontWeight.Bold else FontWeight.Medium
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    text = item.waktu,
+                                    color = if (item.isNext) EmasTerang else Krem,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold
                                 )
                             }
                         }
@@ -262,7 +315,7 @@ fun JadwalShalatDetailDialog(
                                     )
                                     if (item.isNext) {
                                         Text(
-                                            text = "★ Waktu Shalat Berikutnya",
+                                            text = "Akan datang",
                                             color = Emas,
                                             fontSize = 10.sp,
                                             fontWeight = FontWeight.SemiBold

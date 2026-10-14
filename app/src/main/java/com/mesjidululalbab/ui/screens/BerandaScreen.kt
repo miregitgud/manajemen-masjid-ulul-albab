@@ -65,14 +65,14 @@ fun BerandaScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Sleek Islamic Greeting Banner
+            // Sleek Islamic Greeting Banner (INFORMATIONAL HEADER)
             Card(
                 colors = CardDefaults.cardColors(
                     containerColor = HijauKartu.copy(alpha = 0.9f)
                 ),
                 shape = RoundedCornerShape(18.dp),
                 border = BorderStroke(1.dp, emasGradient),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -102,10 +102,10 @@ fun BerandaScreen(
                 }
             }
 
-            // Prayer Times Compact Widget
+            // Prayer Times Compact Widget (CLICKABLE FOR DETAIL & LOCATION)
             KartuJadwalShalat()
 
-            // Quick Overview Stats Row (Saldo Kas highlighted)
+            // Quick Summary Metrics Row (PURE NON-CLICKABLE STAT SUMMARY)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -133,7 +133,7 @@ fun BerandaScreen(
                 )
             }
 
-            // Featured "Agenda Terdekat" Section (HIGH CONTRAST HIGHLIGHT)
+            // Featured "Agenda Terdekat" Section (HIGH CONTRAST HIGHLIGHT PREVIEW)
             Column(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
@@ -156,7 +156,7 @@ fun BerandaScreen(
                     )
                 }
 
-                // Vibrant Highlight Card
+                // Vibrant Interactive Highlight Card
                 Card(
                     colors = CardDefaults.cardColors(
                         containerColor = HijauKartuHighlight
@@ -227,26 +227,35 @@ fun BerandaScreen(
                                 )
                             }
 
-                            Spacer(Modifier.height(10.dp))
+                            Spacer(Modifier.height(12.dp))
 
                             Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.End,
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End
                             ) {
-                                Text(
-                                    text = "Lihat Semua Agenda",
+                                Surface(
                                     color = EmasTerang,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Spacer(Modifier.width(4.dp))
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                    contentDescription = null,
-                                    tint = EmasTerang,
-                                    modifier = Modifier.size(15.dp)
-                                )
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = "Buka Detail Agenda",
+                                            color = HijauGelap,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Spacer(Modifier.width(4.dp))
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                            contentDescription = null,
+                                            tint = HijauGelap,
+                                            modifier = Modifier.size(13.dp)
+                                        )
+                                    }
+                                }
                             }
                         } else {
                             Text(
@@ -287,7 +296,7 @@ fun BerandaScreen(
                 )
             }
 
-            // Core Menu Cards
+            // Core Menu Cards (PRIMARY NAVIGATION MODULES)
             Column(
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
@@ -336,11 +345,11 @@ private fun StatCard(
             if (isHighlight) 1.2.dp else 0.8.dp,
             if (isHighlight) EmasTerang else Emas.copy(alpha = 0.4f)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isHighlight) 4.dp else 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isHighlight) 3.dp else 1.dp),
         modifier = modifier
     ) {
         Column(
-            modifier = Modifier.padding(10.dp),
+            modifier = Modifier.padding(12.dp),
             horizontalAlignment = Alignment.Start
         ) {
             Text(label, color = if (isHighlight) Krem else Krem.copy(alpha = 0.8f), fontSize = 10.sp)
