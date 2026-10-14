@@ -21,6 +21,9 @@ fun KartuBeritaAcara(
     onHapus: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val signedCount = listOf(berita.saksi1Ttd, berita.saksi2Ttd, berita.saksi3Ttd, berita.saksi4Ttd)
+        .count { it.isNotBlank() }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -77,6 +80,21 @@ fun KartuBeritaAcara(
                 color = Krem,
                 fontSize = 11.sp
             )
+
+            Spacer(Modifier.height(6.dp))
+
+            Surface(
+                color = if (signedCount == 4) HijauMuda else HijauAksen,
+                shape = RoundedCornerShape(6.dp)
+            ) {
+                Text(
+                    text = "✍ Status Ttd Digital: $signedCount / 4 Saksi Terrekam",
+                    color = EmasTerang,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                )
+            }
 
             Spacer(Modifier.height(10.dp))
 

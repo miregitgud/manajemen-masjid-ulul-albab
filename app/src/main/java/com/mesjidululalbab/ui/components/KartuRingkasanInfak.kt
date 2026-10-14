@@ -2,17 +2,18 @@ package com.mesjidululalbab.ui.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mesjidululalbab.ui.theme.Emas
-import com.mesjidululalbab.ui.theme.Hijau
-import com.mesjidululalbab.ui.theme.HijauKartu
-import com.mesjidululalbab.ui.theme.Krem
+import com.mesjidululalbab.ui.theme.*
+import com.mesjidululalbab.util.ShareUtils
 import com.mesjidululalbab.util.formatRupiah
 
 @Composable
@@ -22,6 +23,7 @@ fun KartuRingkasanInfak(
     modifier: Modifier = Modifier
 ) {
     val saldo = totalPemasukan - totalPengeluaran
+    val context = LocalContext.current
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -79,6 +81,25 @@ fun KartuRingkasanInfak(
                         fontSize = 14.sp
                     )
                 }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            Button(
+                onClick = { ShareUtils.bagikanLaporanInfak(context, totalPemasukan, totalPengeluaran) },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = HijauMuda,
+                    contentColor = Emas
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Share,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(Modifier.width(6.dp))
+                Text("Bagikan Laporan Kas Infak", fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

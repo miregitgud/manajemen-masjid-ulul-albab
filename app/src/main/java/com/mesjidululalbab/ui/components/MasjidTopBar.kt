@@ -3,12 +3,14 @@ package com.mesjidululalbab.ui.components
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.mesjidululalbab.ui.theme.Emas
+import com.mesjidululalbab.ui.theme.EmasTerang
 import com.mesjidululalbab.ui.theme.Hijau
 import com.mesjidululalbab.ui.theme.Krem
 
@@ -17,7 +19,8 @@ import com.mesjidululalbab.ui.theme.Krem
 fun MasjidTopBar(
     halamanAktif: String,
     bisaKembali: Boolean,
-    onKembaliClick: () -> Unit
+    onKembaliClick: () -> Unit,
+    onBackupClick: (() -> Unit)? = null
 ) {
     TopAppBar(
         title = {
@@ -53,6 +56,17 @@ fun MasjidTopBar(
                 }
             }
         },
+        actions = {
+            if (onBackupClick != null) {
+                IconButton(onClick = onBackupClick) {
+                    Icon(
+                        imageVector = Icons.Default.CloudSync,
+                        contentDescription = "Backup & Restore Data",
+                        tint = EmasTerang
+                    )
+                }
+            }
+        },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Hijau
         )
@@ -65,7 +79,8 @@ fun MasjidTopBarBerandaPreview() {
     MasjidTopBar(
         halamanAktif = "Beranda",
         bisaKembali = false,
-        onKembaliClick = {}
+        onKembaliClick = {},
+        onBackupClick = {}
     )
 }
 

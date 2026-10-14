@@ -31,6 +31,10 @@ class BeritaAcaraRepository(private val context: Context) {
                         saksi2 = o.optString("saksi2"),
                         saksi3 = o.optString("saksi3"),
                         saksi4 = o.optString("saksi4"),
+                        saksi1Ttd = o.optString("saksi1Ttd"),
+                        saksi2Ttd = o.optString("saksi2Ttd"),
+                        saksi3Ttd = o.optString("saksi3Ttd"),
+                        saksi4Ttd = o.optString("saksi4Ttd"),
                         keterangan = o.optString("keterangan")
                     )
                 )
@@ -54,6 +58,10 @@ class BeritaAcaraRepository(private val context: Context) {
                 put("saksi2", item.saksi2)
                 put("saksi3", item.saksi3)
                 put("saksi4", item.saksi4)
+                put("saksi1Ttd", item.saksi1Ttd)
+                put("saksi2Ttd", item.saksi2Ttd)
+                put("saksi3Ttd", item.saksi3Ttd)
+                put("saksi4Ttd", item.saksi4Ttd)
                 put("keterangan", item.keterangan)
             })
         }

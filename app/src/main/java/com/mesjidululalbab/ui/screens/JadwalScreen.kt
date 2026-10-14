@@ -2,7 +2,12 @@ package com.mesjidululalbab.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -12,9 +17,7 @@ import com.mesjidululalbab.data.model.Jadwal
 import com.mesjidululalbab.ui.components.JadwalFormDialog
 import com.mesjidululalbab.ui.components.JadwalHapusDialog
 import com.mesjidululalbab.ui.components.KartuJadwal
-import com.mesjidululalbab.ui.theme.Emas
-import com.mesjidululalbab.ui.theme.Hijau
-import com.mesjidululalbab.ui.theme.Krem
+import com.mesjidululalbab.ui.theme.*
 
 @Composable
 fun JadwalScreen(
@@ -27,6 +30,22 @@ fun JadwalScreen(
     var editIndex by remember { mutableIntStateOf(-1) }
     var showFormDialog by remember { mutableStateOf(false) }
     var hapusIndex by remember { mutableIntStateOf(-1) }
+
+    var searchQuery by remember { mutableStateOf("") }
+    var selectedKategoriFilter by remember { mutableStateOf("Semua") }
+
+    val filteredList = remember(daftarJadwal, searchQuery, selectedKategoriFilter) {
+        daftarJadwal.mapIndexed { originalIndex, item -> originalIndex to item }
+            .filter { (_, item) ->
+                val matchesKategori = selectedKategoriFilter == "Semua" || item.kategori.equals(selectedKategoriFilter, ignoreCase = true)
+                val matchesQuery = searchQuery.isBlank() ||
+                        item.nama.contains(searchQuery, ignoreCase = true) ||
+                        item.petugas.contains(searchQuery, ignoreCase = true) ||
+                        item.tempat.contains(searchQuery, ignoreCase = true) ||
+                        item.keterangan.contains(searchQuery, ignoreCase = true)
+                matchesKategori && matchesQuery
+            }
+    }
 
     fun bukaForm(index: Int = -1) {
         editIndex = index
@@ -49,11 +68,61 @@ fun JadwalScreen(
             Text("+ Tambah Jadwal")
         }
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(10.dp))
 
-        if (daftarJadwal.isEmpty()) {
+        // Search Bar
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            placeholder = { Text("Cari agenda, penceramah, tempat...") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            trailingIcon = {
+                if (searchQuery.isNotBlank()) {
+                    IconButton(onClick = { searchQuery = "" }) {
+                        Icon(Icons.Default.Clear, contentDescription = "Clear")
+                    }
+                }
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = HijauKartu,
+                unfocusedContainerColor = HijauKartu,
+                focusedTextColor = Krem,
+                unfocusedTextColor = Krem
+            ),
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        // Filter Chips Row
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            items(listOf("Semua", "Harian", "Pekanan", "Bulanan", "Tahunan")) { kat ->
+                FilterChip(
+                    selected = selectedKategoriFilter == kat,
+                    onClick = { selectedKategoriFilter = kat },
+                    label = { Text(kat) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Emas,
+                        selectedLabelColor = Hijau,
+                        containerColor = HijauKartu,
+                        labelColor = Krem
+                    )
+                )
+            }
+        }
+
+        Spacer(Modifier.height(10.dp))
+
+        if (filteredList.isEmpty()) {
             Text(
-                text = "Belum ada jadwal. Tekan Tambah Jadwal untuk memulai.",
+                text = if (daftarJadwal.isEmpty())
+                    "Belum ada jadwal. Tekan Tambah Jadwal untuk memulai."
+                else
+                    "Tidak ada jadwal yang cocok dengan pencarian / filter.",
                 color = Krem,
                 modifier = Modifier.padding(12.dp)
             )
@@ -61,11 +130,11 @@ fun JadwalScreen(
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                itemsIndexed(daftarJadwal) { index, item ->
+                items(filteredList) { (origIdx, item) ->
                     KartuJadwal(
                         jadwal = item,
-                        onEdit = { bukaForm(index) },
-                        onHapus = { hapusIndex = index }
+                        onEdit = { bukaForm(origIdx) },
+                        onHapus = { hapusIndex = origIdx }
                     )
                 }
             }

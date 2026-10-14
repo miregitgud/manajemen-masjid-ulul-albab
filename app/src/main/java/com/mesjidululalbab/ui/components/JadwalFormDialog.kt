@@ -80,7 +80,17 @@ fun JadwalFormDialog(
                         items(listOf("Harian", "Pekanan", "Bulanan", "Tahunan")) { pilihan ->
                             FilterChip(
                                 selected = kategori == pilihan,
-                                onClick = { kategori = pilihan },
+                                onClick = {
+                                    if (kategori != pilihan) {
+                                        kategori = pilihan
+                                        tanggal = when (pilihan) {
+                                            "Pekanan" -> "Jumat"
+                                            "Bulanan" -> "Tanggal 15"
+                                            "Tahunan" -> "15 Oktober"
+                                            else -> ""
+                                        }
+                                    }
+                                },
                                 label = { Text(pilihan) },
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = Emas,
@@ -109,37 +119,171 @@ fun JadwalFormDialog(
                     isError = nama.isBlank()
                 )
 
-                // Tanggal Field with DatePicker Trigger
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    OutlinedTextField(
-                        value = tanggal,
-                        onValueChange = { tanggal = it },
-                        label = { Text("Tanggal *") },
-                        placeholder = { Text("Pilih tanggal") },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.DateRange,
-                                contentDescription = "Pilih Tanggal"
+                // Category-dependent Date/Frequency Selector
+                when (kategori) {
+                    "Harian" -> {
+                        // Full DatePicker Trigger
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            OutlinedTextField(
+                                value = tanggal,
+                                onValueChange = { tanggal = it },
+                                label = { Text("Tanggal Kegiatan *") },
+                                placeholder = { Text("Pilih tanggal") },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.DateRange,
+                                        contentDescription = "Pilih Tanggal"
+                                    )
+                                },
+                                trailingIcon = {
+                                    IconButton(onClick = { showDatePicker = true }) {
+                                        Icon(
+                                            imageVector = Icons.Default.DateRange,
+                                            contentDescription = "Buka Kalender"
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                readOnly = true,
+                                isError = tanggal.isBlank()
                             )
-                        },
-                        trailingIcon = {
-                            IconButton(onClick = { showDatePicker = true }) {
-                                Icon(
-                                    imageVector = Icons.Default.DateRange,
-                                    contentDescription = "Buka Kalender"
-                                )
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .clickable { showDatePicker = true }
+                            )
+                        }
+                    }
+
+                    "Pekanan" -> {
+                        Column {
+                            Text(
+                                text = "Hari Rutin Pekanan *",
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            val daftarHari = listOf("Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu")
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(daftarHari) { hariPilihan ->
+                                    FilterChip(
+                                        selected = tanggal.equals(hariPilihan, ignoreCase = true) || tanggal == "Setiap Hari $hariPilihan",
+                                        onClick = { tanggal = hariPilihan },
+                                        label = { Text(hariPilihan) },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            selectedContainerColor = Emas,
+                                            selectedLabelColor = Hijau,
+                                            containerColor = HijauKartu,
+                                            labelColor = Krem
+                                        )
+                                    )
+                                }
                             }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        readOnly = true,
-                        isError = tanggal.isBlank()
-                    )
-                    // Clickable overlay for entire field
-                    Box(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .clickable { showDatePicker = true }
-                    )
+                        }
+                    }
+
+                    "Bulanan" -> {
+                        Column {
+                            Text(
+                                text = "Tanggal Rutin Tiap Bulan (1 - 31) *",
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            val currentSelectedDay = tanggal.filter { it.isDigit() }.toIntOrNull() ?: 15
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                items((1..31).toList()) { tglNum ->
+                                    FilterChip(
+                                        selected = currentSelectedDay == tglNum,
+                                        onClick = { tanggal = "Tanggal $tglNum" },
+                                        label = { Text("Tgl $tglNum") },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            selectedContainerColor = Emas,
+                                            selectedLabelColor = Hijau,
+                                            containerColor = HijauKartu,
+                                            labelColor = Krem
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    "Tahunan" -> {
+                        val daftarBulan = listOf(
+                            "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                            "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+                        )
+                        var selectedDay by remember(tanggal) {
+                            mutableIntStateOf(tanggal.split(" ").firstOrNull()?.filter { it.isDigit() }?.toIntOrNull() ?: 15)
+                        }
+                        var selectedMonth by remember(tanggal) {
+                            mutableStateOf(
+                                daftarBulan.firstOrNull { b -> tanggal.contains(b, ignoreCase = true) } ?: "Oktober"
+                            )
+                        }
+
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "Tanggal & Bulan Rutin Tiap Tahun *",
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+
+                            Text("Pilih Tanggal:", fontSize = 11.sp, color = Krem)
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                items((1..31).toList()) { tglNum ->
+                                    FilterChip(
+                                        selected = selectedDay == tglNum,
+                                        onClick = {
+                                            selectedDay = tglNum
+                                            tanggal = "$selectedDay $selectedMonth"
+                                        },
+                                        label = { Text("$tglNum") },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            selectedContainerColor = Emas,
+                                            selectedLabelColor = Hijau,
+                                            containerColor = HijauKartu,
+                                            labelColor = Krem
+                                        )
+                                    )
+                                }
+                            }
+
+                            Text("Pilih Bulan:", fontSize = 11.sp, color = Krem)
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                items(daftarBulan) { blnName ->
+                                    FilterChip(
+                                        selected = selectedMonth.equals(blnName, ignoreCase = true),
+                                        onClick = {
+                                            selectedMonth = blnName
+                                            tanggal = "$selectedDay $selectedMonth"
+                                        },
+                                        label = { Text(blnName) },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            selectedContainerColor = Emas,
+                                            selectedLabelColor = Hijau,
+                                            containerColor = HijauKartu,
+                                            labelColor = Krem
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // Waktu Field with TimePicker Trigger
@@ -253,8 +397,8 @@ fun JadwalFormDialog(
         }
     )
 
-    // DatePicker Dialog
-    if (showDatePicker) {
+    // DatePicker Dialog for Harian
+    if (showDatePicker && kategori == "Harian") {
         val datePickerState = rememberDatePickerState(
             initialSelectedDateMillis = System.currentTimeMillis()
         )

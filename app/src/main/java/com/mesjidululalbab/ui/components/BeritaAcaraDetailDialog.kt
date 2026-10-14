@@ -6,11 +6,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -20,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import com.mesjidululalbab.data.model.BeritaAcara
 import com.mesjidululalbab.ui.theme.Emas
 import com.mesjidululalbab.ui.theme.Hijau
+import com.mesjidululalbab.util.ShareUtils
 import com.mesjidululalbab.util.formatRupiah
 
 @Composable
@@ -27,6 +31,8 @@ fun BeritaAcaraDetailDialog(
     berita: BeritaAcara,
     onDismiss: () -> Unit
 ) {
+    val context = LocalContext.current
+
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -38,6 +44,19 @@ fun BeritaAcaraDetailDialog(
                 )
             ) {
                 Text("Tutup Dokumen")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = { ShareUtils.bagikanBeritaAcara(context, berita) }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Share,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(Modifier.width(4.dp))
+                Text("Bagikan Dokumen", color = Hijau, fontWeight = FontWeight.Bold)
             }
         },
         text = {
@@ -167,17 +186,17 @@ fun BeritaAcaraDetailDialog(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            SaksiBlock("Saksi I (Ketua DKM)", berita.saksi1, modifier = Modifier.weight(1f))
+                            SaksiBlock("Saksi I (Ketua DKM)", berita.saksi1, berita.saksi1Ttd, modifier = Modifier.weight(1f))
                             Spacer(Modifier.width(8.dp))
-                            SaksiBlock("Saksi II (Bendahara)", berita.saksi2, modifier = Modifier.weight(1f))
+                            SaksiBlock("Saksi II (Bendahara)", berita.saksi2, berita.saksi2Ttd, modifier = Modifier.weight(1f))
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            SaksiBlock("Saksi III (Penghitung 1)", berita.saksi3, modifier = Modifier.weight(1f))
+                            SaksiBlock("Saksi III (Penghitung 1)", berita.saksi3, berita.saksi3Ttd, modifier = Modifier.weight(1f))
                             Spacer(Modifier.width(8.dp))
-                            SaksiBlock("Saksi IV (Penghitung 2)", berita.saksi4, modifier = Modifier.weight(1f))
+                            SaksiBlock("Saksi IV (Penghitung 2)", berita.saksi4, berita.saksi4Ttd, modifier = Modifier.weight(1f))
                         }
                     }
                 }
@@ -190,18 +209,29 @@ fun BeritaAcaraDetailDialog(
 private fun SaksiBlock(
     jabatan: String,
     nama: String,
+    ttdData: String,
     modifier: Modifier = Modifier
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
             .background(Color(0xFFF9F9F9), RoundedCornerShape(6.dp))
+            .border(0.5.dp, Color.LightGray, RoundedCornerShape(6.dp))
             .padding(8.dp)
     ) {
         Text(jabatan, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
-        Spacer(Modifier.height(12.dp))
-        Text("✓ Signed", fontSize = 9.sp, color = Color(0xFF123D2B), fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(6.dp))
+
+        // Render actual handwritten signature or fallback signature line
+        if (ttdData.isNotBlank()) {
+            SignatureViewer(ttdData = ttdData, modifier = Modifier.height(36.dp))
+        } else {
+            Spacer(Modifier.height(18.dp))
+            HorizontalDivider(color = Color.LightGray, thickness = 1.dp, modifier = Modifier.padding(horizontal = 12.dp))
+            Text("( Belum TTD )", fontSize = 8.sp, color = Color.Gray, fontStyle = FontStyle.Italic)
+        }
+
+        Spacer(Modifier.height(6.dp))
         Text("( $nama )", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
     }
 }

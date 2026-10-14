@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mesjidululalbab.data.model.Jadwal
 import com.mesjidululalbab.ui.theme.*
+import com.mesjidululalbab.util.hitungTanggalBerikutnyaFormatted
 
 @Composable
 fun KartuJadwal(
@@ -19,6 +20,15 @@ fun KartuJadwal(
     onHapus: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val tglBerikutnya = hitungTanggalBerikutnyaFormatted(jadwal)
+    val infoFrekuensi = when (jadwal.kategori) {
+        "Harian" -> "Sekali Jalan"
+        "Pekanan" -> "Setiap Pekan"
+        "Bulanan" -> "Setiap Bulan"
+        "Tahunan" -> "Setiap Tahun"
+        else -> "Jadwal"
+    }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -36,10 +46,15 @@ fun KartuJadwal(
                 fontSize = 17.sp
             )
             Text(
-                "${jadwal.kategori} • ${jadwal.tanggal} • ${jadwal.waktu}",
+                if (jadwal.kategori == "Harian") {
+                    "${jadwal.kategori} ($infoFrekuensi) • ${jadwal.tanggal} • ${jadwal.waktu}"
+                } else {
+                    "${jadwal.kategori} ($infoFrekuensi) • Berikutnya: $tglBerikutnya • ${jadwal.waktu}"
+                },
                 color = Krem,
                 fontSize = 12.sp
             )
+            Spacer(Modifier.height(2.dp))
             Text(
                 "Tempat: ${jadwal.tempat}",
                 color = Krem

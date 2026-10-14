@@ -22,12 +22,14 @@ import com.mesjidululalbab.data.model.Jadwal
 import com.mesjidululalbab.data.repository.BeritaAcaraRepository
 import com.mesjidululalbab.data.repository.InfakRepository
 import com.mesjidululalbab.data.repository.JadwalRepository
+import com.mesjidululalbab.ui.components.BackupRestoreDialog
 import com.mesjidululalbab.ui.components.MasjidTopBar
 import com.mesjidululalbab.ui.screens.BerandaScreen
 import com.mesjidululalbab.ui.screens.BeritaScreen
 import com.mesjidululalbab.ui.screens.InfakScreen
 import com.mesjidululalbab.ui.screens.JadwalScreen
 import com.mesjidululalbab.ui.theme.Hijau
+import com.mesjidululalbab.util.isJadwalMendatang
 
 @Composable
 fun AppNavigation(
@@ -53,6 +55,8 @@ fun AppNavigation(
             addAll(beritaRepository.muatBeritaAcara())
         }
     }
+
+    var showBackupDialog by remember { mutableStateOf(false) }
 
     val backStack = rememberNavBackStack(ScreenRoute.Beranda)
     val ruteAktif = backStack.lastOrNull() as? ScreenRoute ?: ScreenRoute.Beranda
@@ -89,7 +93,8 @@ fun AppNavigation(
             MasjidTopBar(
                 halamanAktif = halamanAktifName,
                 bisaKembali = bisaKembali,
-                onKembaliClick = { backStack.removeLastOrNull() }
+                onKembaliClick = { backStack.removeLastOrNull() },
+                onBackupClick = { showBackupDialog = true }
             )
         }
     ) { innerPadding ->
@@ -130,12 +135,15 @@ fun AppNavigation(
             entryProvider = { key ->
                 when (key) {
                     is ScreenRoute.Beranda -> NavEntry(key) {
-                        val totalJadwal = daftarJadwal.size
+                        val upcomingJadwal = daftarJadwal.filter { isJadwalMendatang(it) }
+                        val jadwalTerdekat = upcomingJadwal.firstOrNull() ?: daftarJadwal.firstOrNull()
+                        val totalUpcomingJadwal = upcomingJadwal.size
                         val saldoInfak = daftarInfak.sumOf { it.jumlahPemasukan } - daftarInfak.sumOf { it.jumlahPengeluaran }
                         val totalBerita = daftarBerita.size
 
                         BerandaScreen(
-                            totalJadwal = totalJadwal,
+                            jadwalTerdekat = jadwalTerdekat,
+                            totalUpcomingJadwal = totalUpcomingJadwal,
                             saldoInfak = saldoInfak,
                             totalBerita = totalBerita,
                             onNavigasiKe = { id ->
@@ -218,6 +226,21 @@ fun AppNavigation(
 
                     else -> error("Rute tidak dikenal: $key")
                 }
+            }
+        )
+    }
+
+    if (showBackupDialog) {
+        BackupRestoreDialog(
+            onDismiss = { showBackupDialog = false },
+            onDataRestored = {
+                daftarJadwal.clear()
+                daftarJadwal.addAll(jadwalRepository.muatJadwal())
+                daftarInfak.clear()
+                daftarInfak.addAll(infakRepository.muatInfak())
+                daftarBerita.clear()
+                daftarBerita.addAll(beritaRepository.muatBeritaAcara())
+                showBackupDialog = false
             }
         )
     }

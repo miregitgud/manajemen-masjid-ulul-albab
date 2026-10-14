@@ -11,5 +11,9 @@ data class BeritaAcara(
     val saksi2: String,
     val saksi3: String,
     val saksi4: String,
+    val saksi1Ttd: String = "",
+    val saksi2Ttd: String = "",
+    val saksi3Ttd: String = "",
+    val saksi4Ttd: String = "",
     val keterangan: String = ""
 )
