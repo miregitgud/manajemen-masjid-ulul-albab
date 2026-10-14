@@ -1,28 +1,111 @@
 package com.mesjidululalbab.ui.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.mesjidululalbab.data.model.InfakJumat
+import com.mesjidululalbab.ui.components.InfakFormDialog
+import com.mesjidululalbab.ui.components.InfakHapusDialog
+import com.mesjidululalbab.ui.components.KartuInfak
+import com.mesjidululalbab.ui.components.KartuRingkasanInfak
+import com.mesjidululalbab.ui.theme.Emas
 import com.mesjidululalbab.ui.theme.Hijau
 import com.mesjidululalbab.ui.theme.Krem
 
 @Composable
 fun InfakScreen(
+    daftarInfak: List<InfakJumat>,
+    onTambahInfak: (InfakJumat) -> Unit,
+    onEditInfak: (Int, InfakJumat) -> Unit,
+    onHapusInfak: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var editIndex by remember { mutableIntStateOf(-1) }
+    var showFormDialog by remember { mutableStateOf(false) }
+    var hapusIndex by remember { mutableIntStateOf(-1) }
+
+    val totalPemasukan = daftarInfak.sumOf { it.jumlahPemasukan }
+    val totalPengeluaran = daftarInfak.sumOf { it.jumlahPengeluaran }
+
+    fun bukaForm(index: Int = -1) {
+        editIndex = index
+        showFormDialog = true
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text(
-            text = "Menu Infak Jumat akan kita lengkapi pada tahap berikutnya.",
-            color = Krem,
-            modifier = Modifier.padding(12.dp)
+        KartuRingkasanInfak(
+            totalPemasukan = totalPemasukan,
+            totalPengeluaran = totalPengeluaran
+        )
+
+        Spacer(Modifier.height(14.dp))
+
+        Button(
+            onClick = { bukaForm() },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Emas,
+                contentColor = Hijau
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("+ Catat Infak Baru")
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        if (daftarInfak.isEmpty()) {
+            Text(
+                text = "Belum ada catatan infak. Tekan tombol di atas untuk mencatat infak.",
+                color = Krem,
+                modifier = Modifier.padding(12.dp)
+            )
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                itemsIndexed(daftarInfak) { index, item ->
+                    KartuInfak(
+                        infak = item,
+                        onEdit = { bukaForm(index) },
+                        onHapus = { hapusIndex = index }
+                    )
+                }
+            }
+        }
+    }
+
+    if (showFormDialog) {
+        val infakEdit = if (editIndex in daftarInfak.indices) daftarInfak[editIndex] else null
+        InfakFormDialog(
+            infakAwal = infakEdit,
+            onDismiss = { showFormDialog = false },
+            onSimpan = { baru ->
+                if (editIndex >= 0) {
+                    onEditInfak(editIndex, baru)
+                } else {
+                    onTambahInfak(baru)
+                }
+                showFormDialog = false
+            }
+        )
+    }
+
+    if (hapusIndex >= 0) {
+        InfakHapusDialog(
+            onDismiss = { hapusIndex = -1 },
+            onKonfirmasiHapus = {
+                onHapusInfak(hapusIndex)
+                hapusIndex = -1
+            }
         )
     }
 }
@@ -31,6 +114,21 @@ fun InfakScreen(
 @Composable
 fun InfakScreenPreview() {
     Surface(color = Hijau) {
-        InfakScreen()
+        InfakScreen(
+            daftarInfak = listOf(
+                InfakJumat(
+                    id = "1",
+                    tanggal = "24/10/2026",
+                    kategori = "Kotak Infak Jumat",
+                    jumlahPemasukan = 5500000L,
+                    jumlahPengeluaran = 250000L,
+                    petugasPenghitung = "H. Ahmad",
+                    keterangan = "Hasil Shalat Jumat"
+                )
+            ),
+            onTambahInfak = {},
+            onEditInfak = { _, _ -> },
+            onHapusInfak = {}
+        )
     }
 }

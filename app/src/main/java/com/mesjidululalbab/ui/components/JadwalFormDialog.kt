@@ -1,21 +1,34 @@
 package com.mesjidululalbab.ui.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.mesjidululalbab.data.model.Jadwal
+import com.mesjidululalbab.ui.theme.Emas
+import com.mesjidululalbab.ui.theme.Hijau
+import com.mesjidululalbab.ui.theme.HijauKartu
+import com.mesjidululalbab.ui.theme.Krem
+import java.text.SimpleDateFormat
+import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JadwalFormDialog(
     jadwalAwal: Jadwal?,
@@ -30,53 +43,187 @@ fun JadwalFormDialog(
     var petugas by remember { mutableStateOf(jadwalAwal?.petugas ?: "") }
     var keterangan by remember { mutableStateOf(jadwalAwal?.keterangan ?: "") }
 
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+
+    val isFormValid = nama.isNotBlank() && tanggal.isNotBlank()
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(if (jadwalAwal != null) "Edit Jadwal" else "Tambah Jadwal")
+            Text(
+                text = if (jadwalAwal != null) "Edit Jadwal Kegiatan" else "Tambah Jadwal Kegiatan",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
         },
         text = {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.heightIn(max = 480.dp)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 500.dp)
+                    .verticalScroll(rememberScrollState())
             ) {
-                item {
-                    Text("Kategori", fontWeight = FontWeight.Bold)
-                    listOf("Harian", "Pekanan", "Bulanan", "Tahunan")
-                        .forEach { pilihan ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                RadioButton(
-                                    selected = kategori == pilihan,
-                                    onClick = { kategori = pilihan }
+                // Kategori Selector
+                Column {
+                    Text(
+                        text = "Kategori Agenda",
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(listOf("Harian", "Pekanan", "Bulanan", "Tahunan")) { pilihan ->
+                            FilterChip(
+                                selected = kategori == pilihan,
+                                onClick = { kategori = pilihan },
+                                label = { Text(pilihan) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = Emas,
+                                    selectedLabelColor = Hijau,
+                                    containerColor = HijauKartu,
+                                    labelColor = Krem
                                 )
-                                Text(pilihan)
-                            }
+                            )
                         }
-                }
-                item {
-                    KolomInput("Nama kegiatan *", nama) { nama = it }
-                    KolomInput("Tanggal (contoh: 20/10/2026)", tanggal) {
-                        tanggal = it
-                    }
-                    KolomInput("Waktu (contoh: 08.00 WIB)", waktu) {
-                        waktu = it
-                    }
-                    KolomInput("Tempat", tempat) { tempat = it }
-                    KolomInput("Penceramah / petugas", petugas) {
-                        petugas = it
-                    }
-                    KolomInput("Keterangan", keterangan) {
-                        keterangan = it
                     }
                 }
+
+                // Nama Kegiatan
+                OutlinedTextField(
+                    value = nama,
+                    onValueChange = { nama = it },
+                    label = { Text("Nama Kegiatan *") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = null
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    isError = nama.isBlank()
+                )
+
+                // Tanggal Field with DatePicker Trigger
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedTextField(
+                        value = tanggal,
+                        onValueChange = { tanggal = it },
+                        label = { Text("Tanggal *") },
+                        placeholder = { Text("Pilih tanggal") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription = "Pilih Tanggal"
+                            )
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = { showDatePicker = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.DateRange,
+                                    contentDescription = "Buka Kalender"
+                                )
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        readOnly = true,
+                        isError = tanggal.isBlank()
+                    )
+                    // Clickable overlay for entire field
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .clickable { showDatePicker = true }
+                    )
+                }
+
+                // Waktu Field with TimePicker Trigger
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedTextField(
+                        value = waktu,
+                        onValueChange = { waktu = it },
+                        label = { Text("Waktu") },
+                        placeholder = { Text("Pilih waktu") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription = "Pilih Waktu"
+                            )
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = { showTimePicker = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.DateRange,
+                                    contentDescription = "Buka Jam"
+                                )
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        readOnly = true
+                    )
+                    // Clickable overlay for entire field
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .clickable { showTimePicker = true }
+                    )
+                }
+
+                // Tempat
+                OutlinedTextField(
+                    value = tempat,
+                    onValueChange = { tempat = it },
+                    label = { Text("Tempat") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = null
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                // Penceramah / Petugas
+                OutlinedTextField(
+                    value = petugas,
+                    onValueChange = { petugas = it },
+                    label = { Text("Penceramah / Petugas") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = null
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                // Keterangan
+                OutlinedTextField(
+                    value = keterangan,
+                    onValueChange = { keterangan = it },
+                    label = { Text("Keterangan Tambahan") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 3
+                )
             }
         },
         confirmButton = {
-            TextButton(
+            Button(
                 onClick = {
-                    if (nama.isNotBlank() && tanggal.isNotBlank()) {
+                    if (isFormValid) {
                         onSimpan(
                             Jadwal(
                                 kategori = kategori,
@@ -89,8 +236,15 @@ fun JadwalFormDialog(
                             )
                         )
                     }
-                }
-            ) { Text("Simpan") }
+                },
+                enabled = isFormValid,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Emas,
+                    contentColor = Hijau
+                )
+            ) {
+                Text("Simpan")
+            }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
@@ -98,6 +252,77 @@ fun JadwalFormDialog(
             }
         }
     )
+
+    // DatePicker Dialog
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = System.currentTimeMillis()
+        )
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.forLanguageTag("id-ID"))
+                            tanggal = sdf.format(Date(millis))
+                        }
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("Pilih")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Batal")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    // TimePicker Dialog
+    if (showTimePicker) {
+        val cal = Calendar.getInstance()
+        val timePickerState = rememberTimePickerState(
+            initialHour = cal.get(Calendar.HOUR_OF_DAY),
+            initialMinute = cal.get(Calendar.MINUTE),
+            is24Hour = true
+        )
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val jam = timePickerState.hour.toString().padStart(2, '0')
+                        val menit = timePickerState.minute.toString().padStart(2, '0')
+                        waktu = "$jam.$menit WIB"
+                        showTimePicker = false
+                    }
+                ) {
+                    Text("Pilih")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text("Batal")
+                }
+            },
+            title = {
+                Text("Pilih Waktu Agenda", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            },
+            text = {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    TimePicker(state = timePickerState)
+                }
+            }
+        )
+    }
 }
 
 @Preview

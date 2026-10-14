@@ -16,7 +16,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import com.mesjidululalbab.data.model.InfakJumat
 import com.mesjidululalbab.data.model.Jadwal
+import com.mesjidululalbab.data.repository.InfakRepository
 import com.mesjidululalbab.data.repository.JadwalRepository
 import com.mesjidululalbab.ui.components.MasjidTopBar
 import com.mesjidululalbab.ui.screens.BerandaScreen
@@ -29,10 +31,17 @@ import com.mesjidululalbab.ui.theme.Hijau
 fun AppNavigation(
     context: Context = LocalContext.current
 ) {
-    val repository = remember(context) { JadwalRepository(context) }
+    val jadwalRepository = remember(context) { JadwalRepository(context) }
     val daftarJadwal = remember {
         mutableStateListOf<Jadwal>().apply {
-            addAll(repository.muatJadwal())
+            addAll(jadwalRepository.muatJadwal())
+        }
+    }
+
+    val infakRepository = remember(context) { InfakRepository(context) }
+    val daftarInfak = remember {
+        mutableStateListOf<InfakJumat>().apply {
+            addAll(infakRepository.muatInfak())
         }
     }
 
@@ -80,26 +89,34 @@ fun AppNavigation(
             onBack = { backStack.removeLastOrNull() },
             modifier = Modifier.padding(innerPadding),
             transitionSpec = {
-                // Smooth slide in horizontally + fade in for forward screen transition
                 (slideInHorizontally(
                     initialOffsetX = { fullWidth -> fullWidth },
-                    animationSpec = tween(350)
-                ) + fadeIn(animationSpec = tween(350))) togetherWith
+                    animationSpec = tween(300)
+                ) + fadeIn(animationSpec = tween(300))) togetherWith
                         (slideOutHorizontally(
-                            targetOffsetX = { fullWidth -> -fullWidth / 3 },
-                            animationSpec = tween(350)
-                        ) + fadeOut(animationSpec = tween(350)))
+                            targetOffsetX = { fullWidth -> -fullWidth },
+                            animationSpec = tween(300)
+                        ) + fadeOut(animationSpec = tween(300)))
             },
             popTransitionSpec = {
-                // Smooth slide in from left + fade in for backward screen transition
                 (slideInHorizontally(
-                    initialOffsetX = { fullWidth -> -fullWidth / 3 },
-                    animationSpec = tween(350)
-                ) + fadeIn(animationSpec = tween(350))) togetherWith
+                    initialOffsetX = { fullWidth -> -fullWidth },
+                    animationSpec = tween(300)
+                ) + fadeIn(animationSpec = tween(300))) togetherWith
                         (slideOutHorizontally(
                             targetOffsetX = { fullWidth -> fullWidth },
-                            animationSpec = tween(350)
-                        ) + fadeOut(animationSpec = tween(350)))
+                            animationSpec = tween(300)
+                        ) + fadeOut(animationSpec = tween(300)))
+            },
+            predictivePopTransitionSpec = {
+                (slideInHorizontally(
+                    initialOffsetX = { fullWidth -> -fullWidth },
+                    animationSpec = tween(300)
+                ) + fadeIn(animationSpec = tween(300))) togetherWith
+                        (slideOutHorizontally(
+                            targetOffsetX = { fullWidth -> fullWidth },
+                            animationSpec = tween(300)
+                        ) + fadeOut(animationSpec = tween(300)))
             },
             entryProvider = { key ->
                 when (key) {
@@ -122,25 +139,43 @@ fun AppNavigation(
                             daftarJadwal = daftarJadwal,
                             onTambahJadwal = { baru ->
                                 daftarJadwal.add(baru)
-                                repository.simpanJadwal(daftarJadwal.toList())
+                                jadwalRepository.simpanJadwal(daftarJadwal.toList())
                             },
                             onEditJadwal = { index, baru ->
                                 if (index in daftarJadwal.indices) {
                                     daftarJadwal[index] = baru
-                                    repository.simpanJadwal(daftarJadwal.toList())
+                                    jadwalRepository.simpanJadwal(daftarJadwal.toList())
                                 }
                             },
                             onHapusJadwal = { index ->
                                 if (index in daftarJadwal.indices) {
                                     daftarJadwal.removeAt(index)
-                                    repository.simpanJadwal(daftarJadwal.toList())
+                                    jadwalRepository.simpanJadwal(daftarJadwal.toList())
                                 }
                             }
                         )
                     }
 
                     is ScreenRoute.Infak -> NavEntry(key) {
-                        InfakScreen()
+                        InfakScreen(
+                            daftarInfak = daftarInfak,
+                            onTambahInfak = { baru ->
+                                daftarInfak.add(baru)
+                                infakRepository.simpanInfak(daftarInfak.toList())
+                            },
+                            onEditInfak = { index, baru ->
+                                if (index in daftarInfak.indices) {
+                                    daftarInfak[index] = baru
+                                    infakRepository.simpanInfak(daftarInfak.toList())
+                                }
+                            },
+                            onHapusInfak = { index ->
+                                if (index in daftarInfak.indices) {
+                                    daftarInfak.removeAt(index)
+                                    infakRepository.simpanInfak(daftarInfak.toList())
+                                }
+                            }
+                        )
                     }
 
                     is ScreenRoute.Berita -> NavEntry(key) {

@@ -42,6 +42,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
     implementation("androidx.compose.material:material-icons-core")
+    implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.navigation3.runtime)
     implementation(libs.navigation3.ui)
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
