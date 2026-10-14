@@ -18,7 +18,6 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.mesjidululalbab.data.model.Jadwal
 import com.mesjidululalbab.data.repository.JadwalRepository
-import com.mesjidululalbab.ui.components.MasjidBottomBar
 import com.mesjidululalbab.ui.components.MasjidTopBar
 import com.mesjidululalbab.ui.screens.BerandaScreen
 import com.mesjidululalbab.ui.screens.BeritaScreen
@@ -73,20 +72,6 @@ fun AppNavigation(
                 halamanAktif = halamanAktifName,
                 bisaKembali = bisaKembali,
                 onKembaliClick = { backStack.removeLastOrNull() }
-            )
-        },
-        bottomBar = {
-            MasjidBottomBar(
-                halamanAktif = halamanAktifName,
-                onPilihHalaman = { id ->
-                    val ruteTarget = when (id) {
-                        "Jadwal" -> ScreenRoute.Jadwal
-                        "Infak" -> ScreenRoute.Infak
-                        "Berita" -> ScreenRoute.Berita
-                        else -> ScreenRoute.Beranda
-                    }
-                    navigasiKe(ruteTarget)
-                }
             )
         }
     ) { innerPadding ->
