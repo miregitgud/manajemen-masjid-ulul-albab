@@ -34,7 +34,7 @@ fun JadwalScreen(
     var searchQuery by remember { mutableStateOf("") }
     var selectedKategoriFilter by remember { mutableStateOf("Semua") }
 
-    val filteredList = remember(daftarJadwal, searchQuery, selectedKategoriFilter) {
+    val filteredList = remember(daftarJadwal.toList(), searchQuery, selectedKategoriFilter) {
         daftarJadwal.mapIndexed { originalIndex, item -> originalIndex to item }
             .filter { (_, item) ->
                 val matchesKategori = selectedKategoriFilter == "Semua" || item.kategori.equals(selectedKategoriFilter, ignoreCase = true)

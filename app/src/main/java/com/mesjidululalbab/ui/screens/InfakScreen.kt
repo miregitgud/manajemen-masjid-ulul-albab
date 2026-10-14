@@ -37,7 +37,7 @@ fun InfakScreen(
     val totalPemasukan = daftarInfak.sumOf { it.jumlahPemasukan }
     val totalPengeluaran = daftarInfak.sumOf { it.jumlahPengeluaran }
 
-    val filteredList = remember(daftarInfak, searchQuery, selectedKategoriFilter) {
+    val filteredList = remember(daftarInfak.toList(), searchQuery, selectedKategoriFilter) {
         daftarInfak.mapIndexed { originalIndex, item -> originalIndex to item }
             .filter { (_, item) ->
                 val matchesKategori = selectedKategoriFilter == "Semua" || item.kategori.equals(selectedKategoriFilter, ignoreCase = true)

@@ -201,7 +201,7 @@ fun JadwalShalatDetailDialog(
         },
         dismissButton = {
             TextButton(onClick = onUbahLokasiClick) {
-                Text("📍 Ubah Lokasi", color = Emas)
+                Text("Ubah Lokasi", color = Emas)
             }
         },
         title = {

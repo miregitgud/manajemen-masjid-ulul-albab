@@ -1,5 +1,6 @@
 package com.mesjidululalbab.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -7,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -21,9 +23,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mesjidululalbab.data.model.BeritaAcara
-import com.mesjidululalbab.ui.theme.Emas
-import com.mesjidululalbab.ui.theme.Hijau
-import com.mesjidululalbab.util.ShareUtils
+import com.mesjidululalbab.ui.theme.*
+import com.mesjidululalbab.util.PdfUtils
 import com.mesjidululalbab.util.formatRupiah
 
 @Composable
@@ -36,27 +37,43 @@ fun BeritaAcaraDetailDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            Button(
-                onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Hijau,
-                    contentColor = Emas
-                )
-            ) {
-                Text("Tutup Dokumen")
-            }
         },
         dismissButton = {
-            TextButton(
-                onClick = { ShareUtils.bagikanBeritaAcara(context, berita) }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Share,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(Modifier.width(4.dp))
-                Text("Bagikan Dokumen", color = Hijau, fontWeight = FontWeight.Bold)
+                OutlinedButton(
+                    onClick = { PdfUtils.downloadBeritaAcaraPdf(context, berita) },
+                    border = BorderStroke(1.dp, Emas),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = EmasTerang)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Download,
+                        contentDescription = "Unduh PDF",
+                        modifier = Modifier.size(16.dp),
+                        tint = EmasTerang
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text("Unduh PDF", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                }
+
+                Button(
+                    onClick = { PdfUtils.shareBeritaAcaraPdf(context, berita) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Emas,
+                        contentColor = Hijau
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Bagikan PDF",
+                        modifier = Modifier.size(16.dp),
+                        tint = Hijau
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text("Bagikan PDF", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                }
             }
         },
         text = {
